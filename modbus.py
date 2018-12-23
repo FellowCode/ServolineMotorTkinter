@@ -7,22 +7,21 @@ import time
 q = Queue()
 
 class Command:
-    right_func = None
-    error_func = None
     def func(self, *args, **kwargs):
-        if self.right_func:
-            self.right_func(*args, **kwargs)
+        if 'right_func' in self.kw and self.kw['right_func']:
+            self.kw['right_func'](*args, **kwargs)
 
-    def __init__(self, cm, right_ans=None, func=None, error_func=None, register=None):
-        self.cm = cm
-        self.right_ans = right_ans
-        self.error_func = error_func
-        self.right_func = func
-        self.register = register
+    def __init__(self, **kwargs):
+        self.cm = kwargs['cm']
+        self.kw = kwargs
+        # self.right_ans = kwargs['right_ans']
+        # self.error_func = kwargs['error_func']
+        # self.right_func = kwargs['func']
+        # self.register = kwargs['register']
 
     def error(self, *args, **kwargs):
-        if self.error_func:
-            self.error_func(*args, **kwargs)
+        if 'error_func' in self.kw and self.kw['error_func']:
+            self.kw['error_func'](*args, **kwargs)
 
 class SendCommandThread(Thread):
     work = True
@@ -44,16 +43,19 @@ class SendCommandThread(Thread):
                     self.ser.write(command.cm.encode('utf-8'))
                     ans = self.ser.readline().decode('utf-8')[:-2]
                     print('get ', ans)
-                    if command.right_ans:
-                        right_ans = command.right_ans[:-2]
+                    if 'right_ans' in command.kw:
+                        right_ans = command.kw['right_ans'][:-2]
                     else:
                         right_ans = None
-                    command.func(ans=ans, right_ans=right_ans, register=command.register)
-                    if command.right_ans and command.right_ans[:-2] != ans:
+                    kw = command.kw
+                    kw['ans'] = ans
+                    kw['right_ans'] = right_ans
+                    command.func(**kw)
+                    if 'right_ans' in command.kw and command.kw['right_ans'] and command.kw['right_ans'][:-2] != ans:
                         command.error()
                     q.task_done()
                 except:
-                    self.app.root_widget.error('Потеряно соединение с двигателем')
+                    self.app.error('Потеряно соединение с двигателем')
                     q.empty()
 
 
@@ -83,49 +85,51 @@ class Modbus:
             self.ser.close()
             self.is_connect = False
 
-    def send_command(self, cm, right_ans=None, error_func=None):
-        command = Command(cm=cm, right_ans=right_ans, error_func=error_func)
+    def send_command(self, **kwargs):
+        command = Command(**kwargs)
         q.put(command)
 
-    def set_param(self, register, value, func=None, error_func=None):
-        cm = set_param_command(register, value)
-        command = Command(cm=cm, right_ans=cm, func=func, error_func=error_func)
+    def set_param(self, **kwargs):
+        kwargs['cm'] = set_param_command(kwargs['register'], kwargs['value'])
+        command = Command(**kwargs)
         q.put(command)
 
-    def get_param(self, register, func):
-        cm = get_param_command(register)
-        command = Command(cm=cm, func=func, register=register)
+    def get_param(self, **kwargs):
+        cm = get_param_command(kwargs['register'])
+        kwargs['cm'] = cm
+        command = Command(**kwargs)
         q.put(command)
 
     def JOG_On(self):
         cm = JOG_on_command()
-        self.send_command(cm, ':0103020032C8')
+        self.send_command(cm=cm, right_ans=':0103020032C8')
 
     def JOG_Off(self):
         cm = JOG_off_command()
-        self.send_command(cm, ':011009000003E3')
+        self.send_command(cm=cm, right_ans=':011009000003E3')
 
-    def servo_on(self, func=None):
-        cm = servo_on_command()
-        command = Command(cm=cm, right_ans=cm, func=func)
+    def servo_on(self, **kwargs):
+        kwargs['cm'] = servo_on_command()
+        kwargs['right_ans'] = kwargs['cm']
+        command = Command(**kwargs)
         q.put(command)
 
     def servo_off(self):
         cm = servo_off_command()
-        self.send_command(cm, cm)
+        self.send_command(cm=cm, right_ans=cm)
 
     def servo_forward_start(self):
         cm = servo_forward_start_command()
-        self.send_command(cm, cm)
+        self.send_command(cm=cm, right_ans=cm)
 
     def servo_forward_stop(self):
         cm = servo_forward_stop_command()
-        self.send_command(cm, cm)
+        self.send_command(cm=cm, right_ans=cm)
 
     def servo_reverse_start(self):
         cm = servo_reverse_start_command()
-        self.send_command(cm, cm)
+        self.send_command(cm=cm, right_ans=cm)
 
     def servo_reverse_stop(self):
         cm = servo_reverse_stop_command()
-        self.send_command(cm, cm)
+        self.send_command(cm=cm, right_ans=cm)
