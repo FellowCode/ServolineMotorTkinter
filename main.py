@@ -49,6 +49,7 @@ class ServolineMotorApp:
     btn_add_preset = None
     btn_change_preset = None
     btn_del_preset = None
+    image_speed_error = None
 
     def save_params(self):
         #print('save params')
@@ -255,35 +256,32 @@ class ServolineMotorApp:
             self.save_params()
             self.enable_buttons(self.switch_motor.val)
 
-    def entry_changed(self, entry):
+    def param_changed(self):
         values = ['speed', 'accel_time', 'deccel_time']
         for val in values:
-            if eval('self.' + str(self.mode) + '_' + str(val) +'!=self.' + val):
+            if eval('self.' + str(self.mode) + '_' + str(val) +'!=self.' + str(val) + '.get()')or\
+                    (self.auto_work_time!=self.work_time.get()):
+                self.image_speed_error.place(x=230, y=50)
+
+
+    def param_change_complete(self):
+        values = ['speed', 'accel_time', 'deccel_time']
+        for val in values:
+            if eval('self.' + str(self.mode) + '_' + str(val) +'!=self.' + str(val) + '.get()')or\
+                    (self.auto_work_time!=self.work_time.get()):
                 self.save_params()
+                self.servo_set_params()
                 if self.mode == 'auto':
                     self.auto_presets_id = -1
                 else:
                     self.manual_presets_id = -1
                 break
 
-        if self.mode == 'auto':
-            pass
-        '''
-        # if self.mode == 'auto':
-        #     self.auto_speed = speed.get()
-        #     self.auto_accel_time = accel_time.get()
-        #     self.auto_deccel_time = deccel_time.get()
-        #     self.auto_work_time = work_time.get()
-        #     self.auto_presets_id = -1
-        # else:
-        #     self.manual_speed = speed.get()
-        #     self.manual_accel_time = accel_time.get()
-        #     self.manual_deccel_time = deccel_time.get()
-        #     self.manual_presets_id = -1
-        '''
-        # self.save_params()
-        # self.servo_set_params()
-        # self.preset_var.set('Выбрать пресет')
+        if (self.mode == 'auto' and self.auto_presets_id == -1)or\
+                (self.mode == 'manual' and self.manual_presets_id == -1):
+            self.preset_var.set('Выбрать пресет')
+
+        self.image_speed_error.place_forget()
 
     def change_mode(self):
         self.enable_buttons(False)

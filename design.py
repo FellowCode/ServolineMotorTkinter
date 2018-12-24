@@ -65,6 +65,20 @@ class IntegerEntry(ttk.Entry):
             if not char in '0123456789':
                 self.delete(index, index+1)
 
+class ParamEntry(IntegerEntry):
+    def __init__(self, *args, **kwargs):
+        self.app = kwargs['app']
+        del kwargs['app']
+        super().__init__(*args, **kwargs)
+        self.bind('<FocusOut>', (lambda _: self.app.param_change_complete()))
+        self.bind('<Return>', (lambda _: self.app.param_change_complete()))
+        self.bind('<KeyRelease>', self.entry_changed)
+
+    def entry_changed(self, event):
+        super().entry_changed(event)
+        self.app.param_changed()
+
+
 def ui_setup(app):
     style = ttk.Style()
     style.theme_use('vista')
@@ -102,21 +116,13 @@ def ui_setup(app):
     app.label_work_time = ttk.Label(app.frame, text='Время работы')
     app.label_work_time.place(x=155, y=140, anchor='ne')
 
-    app.entry_speed = IntegerEntry(app.frame, textvariable=app.speed, font=font_mean)
-    app.entry_speed.bind('<FocusOut>', (lambda _: app.entry_changed(app.entry_speed)))
-    app.entry_speed.bind('<Return>', (lambda _: app.entry_changed(app.entry_speed)))
+    app.entry_speed = ParamEntry(app.frame, app=app, textvariable=app.speed, font=font_mean)
     app.entry_speed.place(x=165, y=50, width=60)
-    app.entry_accel_time = IntegerEntry(app.frame, textvariable=app.accel_time, font=font_mean)
-    app.entry_accel_time.bind('<FocusOut>', (lambda _: app.entry_changed(app.entry_accel_time)))
-    app.entry_accel_time.bind('<Return>', (lambda _: app.entry_changed(app.entry_accel_time)))
+    app.entry_accel_time = ParamEntry(app.frame, app=app, textvariable=app.accel_time, font=font_mean)
     app.entry_accel_time.place(x=165, y=80, width=60)
-    app.entry_deccel_time = IntegerEntry(app.frame, textvariable=app.deccel_time, font=font_mean)
-    app.entry_deccel_time.bind('<FocusOut>', (lambda _: app.entry_changed(app.entry_deccel_time)))
-    app.entry_deccel_time.bind('<Return>', (lambda _: app.entry_changed(app.entry_deccel_time)))
+    app.entry_deccel_time = ParamEntry(app.frame, app=app, textvariable=app.deccel_time, font=font_mean)
     app.entry_deccel_time.place(x=165, y=110, width=60)
-    app.entry_work_time = IntegerEntry(app.frame, textvariable=app.work_time, font=font_mean)
-    app.entry_work_time.bind('<FocusOut>', (lambda _: app.entry_changed(app.entry_work_time)))
-    app.entry_work_time.bind('<Return>', (lambda _: app.entry_changed(app.entry_work_time)))
+    app.entry_work_time = ParamEntry(app.frame, app=app, textvariable=app.work_time, font=font_mean)
     app.entry_work_time.place(x=165, y=140, width=60)
 
     img_temp = Image.open('img/error2.png').resize((20, 20), Image.ANTIALIAS)
