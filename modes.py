@@ -1,14 +1,18 @@
 from design import *
-from threading import Timer
+from threading import Timer, Thread
+import time
 
 class AutoMode:
     reverse = False
-    def initial_ui_vars(self):
-        self.btn_start = None
-        self.btn_stop = None
-        self.btn_change_mode = None
-        self.switch_reverse = None
-        self.label_move_state = None
+
+    btn_start = None
+    btn_stop = None
+    btn_change_mode = None
+    switch_reverse = None
+    label_move_state = None
+    progressbar_motor = None
+
+    progress_run = False
 
     def show(self):
         self.app.frame_auto_mode.place(x=0, y=220, relwidth=1, height=100)
@@ -18,8 +22,25 @@ class AutoMode:
         self.app.frame_auto_mode.place_forget()
         self.app.entry_work_time['state'] = 'disabled'
 
+    def motor_progress(self, work_time):
+        time_unit = work_time / 100
+        stop_pb_step = 5
+        stop_time_unit = self.app.deccel_time.get()/(1000*100/stop_pb_step)
+
+        i=0
+        while self.progress_run and i<100:
+            i+=1
+            self.progressbar_motor['value'] = i
+            time.sleep(time_unit)
+        i=100
+        while i>0:
+            i-=stop_pb_step
+            self.progressbar_motor['value'] = i
+            time.sleep(stop_time_unit)
+
     def start_servo_time_work(self):
-        self.motor_timer = Timer(int(self.app.work_time.get()) / 1000, self.stop_servo_time_work)
+        work_time = int(self.app.work_time.get()) / 1000
+        self.motor_timer = Timer(work_time, self.stop_servo_time_work)
         self.motor_timer.start()
         self.btn_start['state'] = 'disabled'
         self.switch_reverse['state'] = 'disabled'
@@ -27,6 +48,10 @@ class AutoMode:
             self.app.motor.servo_forward_start()
         else:
             self.app.motor.servo_reverse_start()
+
+        self.progress_run = True
+        self.progressbar_thread = Thread(target=self.motor_progress, args=(work_time,)).start()
+
 
     def stop_servo_time_work(self):
         self.motor_timer.cancel()
@@ -36,6 +61,8 @@ class AutoMode:
             self.app.motor.servo_forward_stop()
         else:
             self.app.motor.servo_reverse_stop()
+        self.progress_run = False
+        self.progressbar_motor['value'] = 0
 
     def change_reverse(self, value):
         self.reverse = self.app.reverse = value
@@ -46,14 +73,12 @@ class AutoMode:
         self.app.save_params()
 
     def enable_buttons(self, val):
-        print('disable buttons')
         if val:
             state = 'normal'
         else:
             state = 'disabled'
         self.btn_start['state'] = state
         self.btn_stop['state'] = state
-        #self.btn_change_mode['state'] = state
         self.switch_reverse['state'] = state
 
     def __init__(self, app):
@@ -65,12 +90,12 @@ class AutoMode:
         self.switch_reverse.bind_sw(self.change_reverse)
         self.switch_reverse.set_val(self.app.reverse)
 
-class ManualMode:
 
-    def initial_ui_vars(self):
-        self.btn_forward = None
-        self.btn_back = None
-        self.btn_change_mode = None
+
+class ManualMode:
+    btn_forward = None
+    btn_back = None
+    btn_change_mode = None
 
     def show(self):
         self.app.frame_manual_mode.place(x=0, y=220, relwidth=1, height=100)
@@ -78,14 +103,37 @@ class ManualMode:
     def hide(self):
         self.app.frame_manual_mode.place_forget()
 
-    def disable_buttons(self, val):
+    def enable_buttons(self, val):
         if val:
             state = 'normal'
         else:
             state = 'disabled'
         self.btn_forward['state'] = state
         self.btn_back['state'] = state
-        #self.btn_change_mode['state'] = state
+
+    def key_forward_btn_press(self):
+        if self.app.mode == 'manual':
+            if self.btn_forward['state'] == 'normal':
+                self.btn_forward.state(['pressed'])
+                self.app.motor.servo_forward_start()
+
+    def key_forward_btn_release(self):
+        if self.app.mode == 'manual':
+            if self.btn_forward['state'] == 'normal':
+                self.btn_forward.state(['!pressed'])
+                self.app.motor.servo_forward_stop()
+
+    def key_back_btn_press(self):
+        if self.app.mode == 'manual':
+            if self.btn_back['state'] == 'normal':
+                self.btn_back.state(['pressed'])
+                self.app.motor.servo_back_start()
+
+    def key_back_btn_release(self):
+        if self.app.mode == 'manual':
+            if self.btn_back['state'] == 'normal':
+                self.btn_back.state(['!pressed'])
+                self.app.motor.servo_back_stop()
 
     def __init__(self, app):
         self.app = app
@@ -95,3 +143,8 @@ class ManualMode:
         self.btn_back.bind_hold(func_press=self.app.motor.servo_reverse_start,
                                 func_release=self.app.motor.servo_reverse_stop)
         self.btn_change_mode.bind_release(self.app.change_mode)
+
+        self.app.master.bind('<Left>', lambda _:self.key_forward_btn_press())
+        self.app.master.bind('<KeyRelease-Left>', lambda _:self.key_forward_btn_release())
+        self.app.master.bind('<Right>', lambda _: self.key_back_btn_press())
+        self.app.master.bind('<KeyRelease-Right>', lambda _: self.key_back_btn_release())

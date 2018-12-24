@@ -91,6 +91,7 @@ class Modbus:
 
     def set_param(self, **kwargs):
         kwargs['cm'] = set_param_command(kwargs['register'], kwargs['value'])
+        kwargs['right_ans'] = kwargs['cm']
         command = Command(**kwargs)
         q.put(command)
 
