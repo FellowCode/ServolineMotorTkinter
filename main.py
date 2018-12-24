@@ -257,18 +257,24 @@ class ServolineMotorApp:
 
     def entry_changed(self, entry):
         values = ['speed', 'accel_time', 'deccel_time']
+        for val in values:
+            if eval('self.' + str(self.mode) + '_' + str(val) +'!=self.' + val):
+                self.save_params()
+                if self.mode == 'auto':
+                    self.auto_presets_id = -1
 
-        if self.mode == 'auto':
-            self.auto_speed = self.speed.get()
-            self.auto_accel_time = self.accel_time.get()
-            self.auto_deccel_time = self.deccel_time.get()
-            self.auto_work_time = self.work_time.get()
-            self.auto_presets_id = -1
-        else:
-            self.manual_speed = self.speed.get()
-            self.manual_accel_time = self.accel_time.get()
-            self.manual_deccel_time = self.deccel_time.get()
-            self.manual_presets_id = -1
+
+        # if self.mode == 'auto':
+        #     self.auto_speed = self.speed.get()
+        #     self.auto_accel_time = self.accel_time.get()
+        #     self.auto_deccel_time = self.deccel_time.get()
+        #     self.auto_work_time = self.work_time.get()
+        #     self.auto_presets_id = -1
+        # else:
+        #     self.manual_speed = self.speed.get()
+        #     self.manual_accel_time = self.accel_time.get()
+        #     self.manual_deccel_time = self.deccel_time.get()
+        #     self.manual_presets_id = -1
         self.save_params()
         self.servo_set_params()
         self.preset_var.set('Выбрать пресет')
