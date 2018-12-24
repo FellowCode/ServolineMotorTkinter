@@ -262,22 +262,28 @@ class ServolineMotorApp:
                 self.save_params()
                 if self.mode == 'auto':
                     self.auto_presets_id = -1
+                else:
+                    self.manual_presets_id = -1
+                break
 
-
+        if self.mode == 'auto':
+            pass
+        '''
         # if self.mode == 'auto':
-        #     self.auto_speed = self.speed.get()
-        #     self.auto_accel_time = self.accel_time.get()
-        #     self.auto_deccel_time = self.deccel_time.get()
-        #     self.auto_work_time = self.work_time.get()
+        #     self.auto_speed = speed.get()
+        #     self.auto_accel_time = accel_time.get()
+        #     self.auto_deccel_time = deccel_time.get()
+        #     self.auto_work_time = work_time.get()
         #     self.auto_presets_id = -1
         # else:
-        #     self.manual_speed = self.speed.get()
-        #     self.manual_accel_time = self.accel_time.get()
-        #     self.manual_deccel_time = self.deccel_time.get()
+        #     self.manual_speed = speed.get()
+        #     self.manual_accel_time = accel_time.get()
+        #     self.manual_deccel_time = deccel_time.get()
         #     self.manual_presets_id = -1
-        self.save_params()
-        self.servo_set_params()
-        self.preset_var.set('Выбрать пресет')
+        '''
+        # self.save_params()
+        # self.servo_set_params()
+        # self.preset_var.set('Выбрать пресет')
 
     def change_mode(self):
         self.enable_buttons(False)
