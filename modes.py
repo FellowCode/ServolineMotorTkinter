@@ -25,11 +25,6 @@ class AutoMode(AutoModePart):
             i+=1
             self.progressbar_motor['value'] = i
             time.sleep(time_unit)
-        i=100
-        while i>0:
-            i-=stop_pb_step
-            self.progressbar_motor['value'] = i
-            time.sleep(stop_time_unit)
 
     def start_servo_time_work(self):
         work_time = int(self.app.work_time.get()) / 1000
@@ -90,6 +85,9 @@ class ManualMode(ManualModePart):
     btn_back = None
     btn_change_mode = None
 
+    left_key_is_pressed = False
+    right_key_is_pressed = False
+
     def show(self):
         self.app.show_element(self.frame_part)
 
@@ -105,41 +103,44 @@ class ManualMode(ManualModePart):
         self.btn_back['state'] = state
 
     def key_forward_btn_press(self):
-        if self.app.mode == 'manual':
-            if self.btn_forward['state'] == 'normal':
+        if (not self.left_key_is_pressed) and self.app.mode == 'manual':
+            if str(self.btn_forward['state']) == 'normal':
+                self.left_key_is_pressed = True
                 self.btn_forward.state(['pressed'])
                 self.app.motor.servo_forward_start()
 
+
+
     def key_forward_btn_release(self):
-        if self.app.mode == 'manual':
-            if self.btn_forward['state'] == 'normal':
-                self.btn_forward.state(['!pressed'])
-                self.app.motor.servo_forward_stop()
+        if self.left_key_is_pressed:
+            self.btn_forward.state(['!pressed'])
+            self.app.motor.servo_forward_stop()
+        self.left_key_is_pressed = False
 
     def key_back_btn_press(self):
-        if self.app.mode == 'manual':
-            if self.btn_back['state'] == 'normal':
+        if (not self.right_key_is_pressed) and self.app.mode == 'manual':
+            if str(self.btn_back['state']) == 'normal':
+                self.right_key_is_pressed = True
                 self.btn_back.state(['pressed'])
-                self.app.motor.servo_back_start()
+                self.app.motor.servo_reverse_start()
 
     def key_back_btn_release(self):
-        if self.app.mode == 'manual':
-            if self.btn_back['state'] == 'normal':
-                self.btn_back.state(['!pressed'])
-                self.app.motor.servo_back_stop()
+        if self.right_key_is_pressed:
+            self.btn_back.state(['!pressed'])
+            self.app.motor.servo_reverse_stop()
+        self.right_key_is_pressed = False
 
     def __init__(self, app):
         super().__init__(app.master)
         self.app = app
         self.hide()
-        #ui_setup_manual_mode(app, self)
         self.btn_forward.bind_hold(func_press=self.app.motor.servo_forward_start,
                                    func_release=self.app.motor.servo_forward_stop)
         self.btn_back.bind_hold(func_press=self.app.motor.servo_reverse_start,
                                 func_release=self.app.motor.servo_reverse_stop)
         self.btn_change_mode.bind_release(self.app.change_mode)
 
-        self.app.master.bind('<Left>', lambda _:self.key_forward_btn_press())
-        self.app.master.bind('<KeyRelease-Left>', lambda _:self.key_forward_btn_release())
-        self.app.master.bind('<Right>', lambda _: self.key_back_btn_press())
-        self.app.master.bind('<KeyRelease-Right>', lambda _: self.key_back_btn_release())
+        self.app.master.bind('<Right>', lambda _:self.key_forward_btn_press())
+        self.app.master.bind('<KeyRelease-Right>', lambda _:self.key_forward_btn_release())
+        self.app.master.bind('<Left>', lambda _: self.key_back_btn_press())
+        self.app.master.bind('<KeyRelease-Left>', lambda _: self.key_back_btn_release())
