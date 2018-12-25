@@ -1,5 +1,3 @@
-from tkinter import *
-import tkinter.ttk as ttk
 import tkinter as tk
 from design import *
 from ctypes import windll
@@ -17,7 +15,7 @@ if not os.path.exists(appdata_path):
     os.makedirs(appdata_path)
 
 
-class ServolineMotorApp:
+class ServolineMotorApp(MainForm):
     reverse = False
     mode = 'auto'
     motor = Modbus()
@@ -389,12 +387,12 @@ class ServolineMotorApp:
         self.show_notify_window('Ошибка', text)
 
     def set_default_settings(self):
-        self.com = IntVar()
-        self.speed = IntVar()
-        self.accel_time = IntVar()
-        self.deccel_time = IntVar()
-        self.work_time = IntVar()
-        self.preset_var = StringVar()
+        # self.com = IntVar()
+        # self.speed = IntVar()
+        # self.accel_time = IntVar()
+        # self.deccel_time = IntVar()
+        # self.work_time = IntVar()
+        # self.preset_var = StringVar()
         self.preset_var.set('Выбрать пресет')
         self.width = 400
         self.height = 320
@@ -404,10 +402,11 @@ class ServolineMotorApp:
 
     def __init__(self, master):
         self.master = master
+        super().__init__(self.master)
         self.set_default_settings()
         self.load_params()
         self.load_presets()
-        ui_setup(self)
+        #ui_setup(self)
         self.update_presets_combobox()
         if self.auto_presets_id > -1:
             self.combobox_presets.current(self.auto_presets_id)

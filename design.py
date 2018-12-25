@@ -78,6 +78,112 @@ class ParamEntry(IntegerEntry):
         super().entry_changed(event)
         self.app.param_changed()
 
+class Form:
+    frame = None
+    def show_element(self, elem):
+        elem.lift(self.frame)
+
+    def hide_element(self, elem):
+        elem.lower(self.frame)
+
+class MainForm(Form):
+    entry_com = None
+    btn_connect = None
+    switch_motor = None
+    entry_speed = None
+    entry_accel_time = None
+    entry_deccel_time = None
+    entry_work_time = None
+    combobox_presets = None
+    btn_add_preset = None
+    btn_change_preset = None
+    btn_del_preset = None
+    image_speed_error = None
+
+    def __init__(self, master):
+        self.master = master
+        self.style_init()
+        self.vars_init()
+        self.ui_init()
+
+    def style_init(self):
+        style = ttk.Style()
+        style.theme_use('vista')
+        style.configure('TLabel', font=font_mean)
+        style.configure('Param.TEntry', font=font_mean)
+        style.configure('TButton', font=font_mean)
+        style.configure('Mini.TButton', font=font_small)
+        style.configure('SwitchOn.TButton', background='blue', foreground='blue')
+        style.configure('TCombobox', font=font_mean)
+
+    def vars_init(self):
+        self.com = IntVar()
+        self.speed = IntVar()
+        self.accel_time = IntVar()
+        self.deccel_time = IntVar()
+        self.work_time = IntVar()
+        self.preset_var = StringVar()
+
+    def ui_init(self):
+        self.frame = Frame(self.master)
+        self.frame.place(x=0, y=0, relwidth=1, relheight=1)
+
+        self.label_com = ttk.Label(self.master, text='COM')
+        self.label_com.place(x=10, y=10)
+
+        self.entry_com = IntegerEntry(self.master, textvariable=self.com)
+        self.entry_com.bind('<FocusOut>', (lambda _: self.entry_changed(self.entry_com)))
+        self.entry_com.place(x=50, y=10, width=30)
+
+        self.btn_connect = CButton(self.master, text='Подключиться', style='Mini.TButton')
+        self.btn_connect.place(x=90, y=8)
+
+        self.label_motor = ttk.Label(self.master, text='Motor')
+        self.label_motor.place(x=250, y=10)
+
+        self.switch_motor = SwitchButton(self.master, state='disabled')
+        self.switch_motor.place(x=300, y=7, width=60)
+
+        self.label_speed = ttk.Label(self.master, text='Скорость')
+        self.label_speed.place(x=155, y=50, anchor='ne')
+        self.label_accel_time = ttk.Label(self.master, text='Время ускорения')
+        self.label_accel_time.place(x=155, y=80, anchor='ne')
+        self.label_deccel_time = ttk.Label(self.master, text='Время торможения')
+        self.label_deccel_time.place(x=155, y=110, anchor='ne')
+        self.label_work_time = ttk.Label(self.master, text='Время работы')
+        self.label_work_time.place(x=155, y=140, anchor='ne')
+
+        self.entry_speed = ParamEntry(self.master, app=self, textvariable=self.speed, font=font_mean)
+        self.entry_speed.place(x=165, y=50, width=60)
+        self.entry_accel_time = ParamEntry(self.master, app=self, textvariable=self.accel_time, font=font_mean)
+        self.entry_accel_time.place(x=165, y=80, width=60)
+        self.entry_deccel_time = ParamEntry(self.master, app=self, textvariable=self.deccel_time, font=font_mean)
+        self.entry_deccel_time.place(x=165, y=110, width=60)
+        self.entry_work_time = ParamEntry(self.master, app=self, textvariable=self.work_time, font=font_mean)
+        self.entry_work_time.place(x=165, y=140, width=60)
+
+        img_temp = Image.open('img/error2.png').resize((20, 20), Image.ANTIALIAS)
+        img_temp = ImageTk.PhotoImage(img_temp)
+        self.image_speed_error = ttk.Label(image=img_temp)
+        self.image_speed_error.image = img_temp
+        # app.image_speed_error.place(x=230, y=50)
+
+        logo_temp = Image.open('img/logo.png').resize((130, 130), Image.ANTIALIAS)
+        logo_temp = ImageTk.PhotoImage(logo_temp)
+        self.image_logo = ttk.Label(image=logo_temp)
+        self.image_logo.image = logo_temp
+        self.image_logo.place(x=245, y=40)
+
+        self.combobox_presets = ttk.Combobox(self.master, state='readonly', textvariable=self.preset_var, font=font_mean)
+        self.combobox_presets.bind('<<ComboboxSelected>>', self.preset_selected)
+        self.combobox_presets.place(x=20, y=180)
+        self.btn_add_preset = CButton(self.master, text='+', style='Mini.TButton')
+        self.btn_add_preset.place(x=205, y=180, width=30)
+        self.btn_del_preset = CButton(self.master, text='-', style='Mini.TButton')
+        self.btn_del_preset.place(x=235, y=180, width=30)
+        self.btn_change_preset = CButton(self.master, text='/', style='Mini.TButton')
+        # app.btn_change_preset.place(x=265, y=180, width=30)
+
 
 def ui_setup(app):
     style = ttk.Style()
