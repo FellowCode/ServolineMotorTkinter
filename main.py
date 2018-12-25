@@ -131,8 +131,6 @@ class ServolineMotorApp(MainForm):
         if self.motor.is_connect:
             self.btn_connect['text'] = 'Отключиться'
             self.switch_motor['state'] = 'normal'
-            # self.apply_param_button.disabled = False
-            # self.sync_params_button.disabled = False
         self.servo_sync_params()
         self.preset_var.set('Выбрать пресет')
 
@@ -142,8 +140,6 @@ class ServolineMotorApp(MainForm):
             self.btn_connect['text'] = 'Подключиться'
             self.switch_motor.set_val(False)
             self.switch_motor['state'] = 'disabled'
-            # self.apply_param_button.disabled = True
-            # self.sync_params_button.disabled = True
             self.enable_buttons(True)
 
     def motor_change_state(self, value):
@@ -194,7 +190,6 @@ class ServolineMotorApp(MainForm):
 
     def servo_sync_params(self):
         self.sync_param_process = True
-        #self.enable_buttons(not self.switch_motor.val)
         registers = [ServoReg.SPEED, ServoReg.ACCEL_TIME, ServoReg.DECCEL_TIME]
         for register in registers:
             def check_answer(*args, **kwargs):
@@ -309,7 +304,7 @@ class ServolineMotorApp(MainForm):
 
     def show_add_preset_window(self):
         self.add_preset_master = Toplevel(self.master)
-        self.add_preset_window = AddPresetWindow(self)
+        self.add_preset_window = AddPresetWindow(self, self.add_preset_master)
 
     def add_preset(self, name):
         preset = Preset(name, self.speed.get(), self.accel_time.get(), self.deccel_time.get())
@@ -381,7 +376,7 @@ class ServolineMotorApp(MainForm):
 
     def show_notify_window(self, title, text):
         self.notify_master = Toplevel(self.master)
-        self.notify_window = NotifyWindow(self, title, text)
+        self.notify_window = NotifyWindow(self, self.notify_master, title, text)
 
     def error(self, text):
         self.show_notify_window('Ошибка', text)

@@ -2,24 +2,17 @@ from design import *
 from threading import Timer, Thread
 import time
 
-class AutoMode:
+class AutoMode(AutoModePart):
     reverse = False
-
-    btn_start = None
-    btn_stop = None
-    btn_change_mode = None
-    switch_reverse = None
-    label_move_state = None
-    progressbar_motor = None
 
     progress_run = False
 
     def show(self):
-        self.app.frame_auto_mode.place(x=0, y=220, relwidth=1, height=100)
+        self.app.show_element(self.frame_part)
         self.app.entry_work_time['state'] = 'normal'
 
     def hide(self):
-        self.app.frame_auto_mode.place_forget()
+        self.app.hide_element(self.frame_part)
         self.app.entry_work_time['state'] = 'disabled'
 
     def motor_progress(self, work_time):
@@ -82,8 +75,8 @@ class AutoMode:
         self.switch_reverse['state'] = state
 
     def __init__(self, app):
+        super().__init__(app.master)
         self.app = app
-        ui_setup_auto_mode(self.app, self)
         self.btn_start.bind_release(self.start_servo_time_work)
         self.btn_stop.bind_release(self.stop_servo_time_work)
         self.btn_change_mode.bind_release(self.app.change_mode)
@@ -92,16 +85,16 @@ class AutoMode:
 
 
 
-class ManualMode:
+class ManualMode(ManualModePart):
     btn_forward = None
     btn_back = None
     btn_change_mode = None
 
     def show(self):
-        self.app.frame_manual_mode.place(x=0, y=220, relwidth=1, height=100)
+        self.app.show_element(self.frame_part)
 
     def hide(self):
-        self.app.frame_manual_mode.place_forget()
+        self.app.hide_element(self.frame_part)
 
     def enable_buttons(self, val):
         if val:
@@ -136,8 +129,10 @@ class ManualMode:
                 self.app.motor.servo_back_stop()
 
     def __init__(self, app):
+        super().__init__(app.master)
         self.app = app
-        ui_setup_manual_mode(app, self)
+        self.hide()
+        #ui_setup_manual_mode(app, self)
         self.btn_forward.bind_hold(func_press=self.app.motor.servo_forward_start,
                                    func_release=self.app.motor.servo_forward_stop)
         self.btn_back.bind_hold(func_press=self.app.motor.servo_reverse_start,
