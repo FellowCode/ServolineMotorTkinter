@@ -122,8 +122,10 @@ class MainForm(Form):
         self.btn_add_preset.place(x=205, y=180, width=30)
         self.btn_del_preset = CButton(self.master, text='-', style='Mini.TButton')
         self.btn_del_preset.place(x=235, y=180, width=30)
-        self.btn_change_preset = CButton(self.master, text='/', style='Mini.TButton')
-        # app.btn_change_preset.place(x=265, y=180, width=30)
+        self.btn_up_preset = CButton(self.master, text='/\\', style='Mini.TButton')
+        self.btn_up_preset.place(x=265, y=180, width=30)
+        self.btn_down_preset = CButton(self.master, text='\\/', style='Mini.TButton')
+        self.btn_down_preset.place(x=295, y=180, width=30)
 
 class AutoModePart(UIPart):
     btn_start = None

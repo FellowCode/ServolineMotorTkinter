@@ -35,7 +35,7 @@ class SendCommandThread(Thread):
 
     def run(self):
         while self.work:
-            time.sleep(0.03)
+            time.sleep(0.01)
             if q.not_empty:
                 try:
                     command = q.get()
@@ -55,7 +55,8 @@ class SendCommandThread(Thread):
                         command.error()
                     q.task_done()
                 except:
-                    self.app.error('Потеряно соединение с двигателем')
+                    if self.work:
+                        self.app.error('Потеряно соединение с двигателем')
                     q.empty()
 
 
@@ -80,10 +81,11 @@ class Modbus:
         if self.is_connect:
             self.servo_off()
             self.JOG_Off()
-            time.sleep(0.4)
+            time.sleep(0.1)
             self.command_worker.work = False
-            self.ser.close()
             self.is_connect = False
+            self.ser.close()
+
 
     def send_command(self, **kwargs):
         command = Command(**kwargs)

@@ -320,6 +320,26 @@ class ServolineMotorApp(MainForm):
         self.preset_var.set('Выбрать пресет')
         self.save_presets()
 
+    def up_preset(self):
+        preset_list = eval('self.' + self.mode + '_presets')
+        id = self.combobox_presets.current()
+        if id > 0 and id < len(preset_list):
+            preset = preset_list[id]
+            preset_list[id] = preset_list[id-1]
+            preset_list[id-1] = preset
+            self.update_presets_combobox()
+            self.combobox_presets.current(id-1)
+
+    def down_preset(self):
+        preset_list = eval('self.' + self.mode + '_presets')
+        id = self.combobox_presets.current()
+        if id > -1 and id < len(preset_list)-1:
+            preset = preset_list[id]
+            preset_list[id] = preset_list[id+1]
+            preset_list[id+1] = preset
+            self.update_presets_combobox()
+            self.combobox_presets.current(id + 1)
+
     def preset_selected(self, event):
         index = self.combobox_presets.current()
         if self.mode == 'auto':
@@ -396,8 +416,9 @@ class ServolineMotorApp(MainForm):
         self.switch_motor.change_val()
 
         self.btn_add_preset.bind_release(self.show_add_preset_window)
-        self.btn_change_preset.bind_release(self.change_preset)
         self.btn_del_preset.bind_release(self.del_preset)
+        self.btn_up_preset.bind_release(self.up_preset)
+        self.btn_down_preset.bind_release(self.down_preset)
 
 
 
