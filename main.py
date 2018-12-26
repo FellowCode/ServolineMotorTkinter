@@ -1,5 +1,3 @@
-from tkinter import *
-import tkinter.ttk as ttk
 import tkinter as tk
 from design import *
 from ctypes import windll
@@ -11,13 +9,14 @@ from servo_reg import ServoReg
 from modes import *
 from additional_windows import *
 from preset import Preset
+from dictionary_parser import DictionaryParser
 
 appdata_path = os.getenv('APPDATA') + '\\ServolineMotor\\'
 if not os.path.exists(appdata_path):
     os.makedirs(appdata_path)
 
 
-class ServolineMotorApp:
+class ServolineMotorApp(MainForm):
     reverse = False
     mode = 'auto'
     motor = Modbus()
@@ -37,65 +36,47 @@ class ServolineMotorApp:
     manual_presets_id = -1
 
     sync_param_process = False
-
-    entry_com = None
-    btn_connect = None
-    switch_motor = None
-    entry_speed = None
-    entry_accel_time = None
-    entry_deccel_time = None
-    entry_work_time = None
-    combobox_presets = None
-    btn_add_preset = None
-    btn_change_preset = None
-    btn_del_preset = None
-    image_speed_error = None
-
+    settings_file = DictionaryParser(appdata_path + 'settings.txt')
     def save_params(self):
-        #print('save params')
+        params = {'com': self.com.get()}
+        auto = {'speed': self.auto_speed,
+                'accel_time': self.auto_accel_time,
+                'deccel_time': self.auto_deccel_time,
+                'work_time': self.auto_work_time,
+                'preset_id': self.auto_presets_id,
+                'reverse': self.reverse}
+        manual = {'speed': self.manual_speed,
+                  'accel_time': self.manual_accel_time,
+                  'deccel_time': self.manual_deccel_time,
+                  'preset_id': self.manual_presets_id}
+        params['auto'] = auto
+        params['manual'] = manual
         try:
-            with open(appdata_path + 'settings.txt', 'w') as f:
-                f.write(str(self.com.get()) + '\n')
-                f.write(str(self.auto_speed) + '\n')
-                f.write(str(self.auto_accel_time) + '\n')
-                f.write(str(self.auto_deccel_time) + '\n')
-                f.write(str(self.auto_work_time) + '\n')
-                f.write(str(self.auto_presets_id) + '\n')
-                f.write(str(self.reverse) + '\n')
-                f.write(str(self.manual_speed) + '\n')
-                f.write(str(self.manual_accel_time) + '\n')
-                f.write(str(self.manual_deccel_time) + '\n')
-                f.write(str(self.manual_presets_id) + '\n')
+            self.settings_file.save_dict(params)
         except:
             print('save params error')
 
     def load_params(self):
-        #print('load params')
         try:
-            f = open(appdata_path + 'settings.txt')
-            self.com.set(f.readline().strip())
-            auto_speed = f.readline().strip()
-            if auto_speed != '-1':
-                self.speed.set(int(auto_speed))
-                self.accel_time.set(int(f.readline().strip()))
-                self.deccel_time.set(int(f.readline().strip()))
-                self.work_time.set(int(f.readline().strip()))
-                self.auto_speed = self.speed.get()
-                self.auto_accel_time = self.accel_time.get()
-                self.auto_deccel_time = self.deccel_time.get()
-                self.auto_work_time = self.work_time.get()
-                self.auto_presets_id = int(f.readline())
-                self.reverse = f.readline().strip() == 'True'
-            else:
-                for i in range(4):
-                    f.readline()
-            manual_speed = int(f.readline())
-            if manual_speed != -1:
-                self.manual_speed = manual_speed
-                self.manual_accel_time = int(f.readline())
-                self.manual_deccel_time = int(f.readline())
-                self.manual_presets_id = int(f.readline())
-            f.close()
+            params = self.settings_file.load_dict()
+            self.com.set(params['com'])
+            auto = params['auto']
+            self.auto_speed = auto['speed']
+            self.auto_accel_time = auto['accel_time']
+            self.auto_deccel_time = auto['deccel_time']
+            self.auto_presets_id = auto['preset_id']
+            self.reverse = auto['reverse']
+
+            manual = params['manual']
+            self.manual_speed = manual['speed']
+            self.manual_accel_time = manual['accel_time']
+            self.manual_deccel_time = manual['deccel_time']
+            self.manual_presets_id = manual['preset_id']
+
+            self.speed.set(self.auto_speed)
+            self.accel_time(self.auto_accel_time)
+            self.deccel_time(self.auto_deccel_time)
+            self.work_time(self.auto_work_time)
         except:
             print('load params error')
 
@@ -118,7 +99,6 @@ class ServolineMotorApp:
         pass
 
     def enable_buttons(self, val):
-        #print('enable buttons', val)
         self.auto.enable_buttons(val)
         self.manual.enable_buttons(val)
 
@@ -133,8 +113,6 @@ class ServolineMotorApp:
         if self.motor.is_connect:
             self.btn_connect['text'] = 'Отключиться'
             self.switch_motor['state'] = 'normal'
-            # self.apply_param_button.disabled = False
-            # self.sync_params_button.disabled = False
         self.servo_sync_params()
         self.preset_var.set('Выбрать пресет')
 
@@ -144,8 +122,6 @@ class ServolineMotorApp:
             self.btn_connect['text'] = 'Подключиться'
             self.switch_motor.set_val(False)
             self.switch_motor['state'] = 'disabled'
-            # self.apply_param_button.disabled = True
-            # self.sync_params_button.disabled = True
             self.enable_buttons(True)
 
     def motor_change_state(self, value):
@@ -153,9 +129,7 @@ class ServolineMotorApp:
             def check_motor_is_on(*args, **kwargs):
                 ans = kwargs['ans']
                 right_ans = kwargs['right_ans']
-                print(ans, right_ans)
                 if ans == right_ans:
-                    print(value)
                     self.enable_buttons(value)
 
             self.motor.servo_on(right_func=check_motor_is_on)
@@ -164,7 +138,6 @@ class ServolineMotorApp:
             self.enable_buttons(value)
 
     def set_param_in_entry(self, register, value):
-        print(register, value)
         if self.mode == 'auto':
             if register == ServoReg.SPEED:
                 self.auto_speed = value
@@ -196,7 +169,6 @@ class ServolineMotorApp:
 
     def servo_sync_params(self):
         self.sync_param_process = True
-        #self.enable_buttons(not self.switch_motor.val)
         registers = [ServoReg.SPEED, ServoReg.ACCEL_TIME, ServoReg.DECCEL_TIME]
         for register in registers:
             def check_answer(*args, **kwargs):
@@ -311,7 +283,7 @@ class ServolineMotorApp:
 
     def show_add_preset_window(self):
         self.add_preset_master = Toplevel(self.master)
-        self.add_preset_window = AddPresetWindow(self)
+        self.add_preset_window = AddPresetWindow(self, self.add_preset_master)
 
     def add_preset(self, name):
         preset = Preset(name, self.speed.get(), self.accel_time.get(), self.deccel_time.get())
@@ -383,34 +355,35 @@ class ServolineMotorApp:
 
     def show_notify_window(self, title, text):
         self.notify_master = Toplevel(self.master)
-        self.notify_window = NotifyWindow(self, title, text)
+        self.notify_window = NotifyWindow(self, self.notify_master, title, text)
 
     def error(self, text):
         self.show_notify_window('Ошибка', text)
 
     def set_default_settings(self):
-        self.com = IntVar()
-        self.speed = IntVar()
-        self.accel_time = IntVar()
-        self.deccel_time = IntVar()
-        self.work_time = IntVar()
-        self.preset_var = StringVar()
         self.preset_var.set('Выбрать пресет')
         self.width = 400
         self.height = 320
         self.master.geometry('%dx%d' % (self.width, self.height))
+        self.master.title("Servoline Motor")
+        self.master.iconbitmap("icon.ico")
         self.master.resizable(False, False)
 
 
     def __init__(self, master):
         self.master = master
+        super().__init__(self.master)
         self.set_default_settings()
         self.load_params()
         self.load_presets()
-        ui_setup(self)
         self.update_presets_combobox()
         if self.auto_presets_id > -1:
             self.combobox_presets.current(self.auto_presets_id)
+            preset = self.auto_presets[self.auto_presets_id]
+            self.speed.set(preset.speed)
+            self.accel_time.set(preset.accel_time)
+            self.deccel_time.set(preset.deccel_time)
+            self.work_time.set(preset.work_time)
 
         self.auto = AutoMode(self)
         self.manual = ManualMode(self)
