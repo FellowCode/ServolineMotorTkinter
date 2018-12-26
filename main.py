@@ -81,6 +81,12 @@ class ServolineMotorApp(MainForm):
             print('load params error')
 
     def save_presets(self):
+        id = self.combobox_presets.current()
+        if self.mode == 'auto':
+            self.auto_presets_id = id
+        else:
+            self.manual_presets_id = id
+        self.save_params()
         with open(appdata_path + 'presets.prs', 'wb') as f:
             presets = [self.auto_presets, self.manual_presets]
             pickle.dump(presets, f)
