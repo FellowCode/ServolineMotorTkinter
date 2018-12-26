@@ -73,7 +73,7 @@ class MainForm(Form):
         self.label_com.place(x=10, y=10)
 
         self.entry_com = IntegerEntry(self.master, textvariable=self.com)
-        self.entry_com.bind('<FocusOut>', (lambda _: self.entry_changed(self.entry_com)))
+        self.entry_com.bind('<FocusOut>', (lambda _: self.save_params()))
         self.entry_com.place(x=50, y=10, width=30)
 
         self.btn_connect = CButton(self.master, text='Подключиться', style='Mini.TButton')
@@ -240,19 +240,3 @@ class AddPresetForm(AdditionalForm):
         self.btn_cancel = CButton(self.master, text='Отмена')
         self.btn_cancel.bind_release(self.close)
         self.btn_cancel.place(relx=0.5, y=78, relwidth=0.4, anchor='w')
-
-def ui_add_preset_window(add_preset):
-    add_preset.label_msg = ttk.Label(add_preset.master, text='Добавить пресет')
-    add_preset.label_msg.place(relx=0.5, y=15, anchor='center')
-
-    add_preset.entry_preset_name = ttk.Entry(add_preset.master, textvariable=add_preset.name, font=font_mean)
-    add_preset.entry_preset_name.place(relx=0.5, y=45, relwidth=0.8, anchor='center')
-    add_preset.entry_preset_name.focus()
-
-    add_preset.btn_ok = CButton(add_preset.master, text='Ok')
-    add_preset.btn_ok.bind_release(add_preset.add_preset)
-    add_preset.btn_ok.place(relx=0.5, y=78, relwidth=0.4, anchor='e')
-
-    add_preset.btn_cancel = CButton(add_preset.master, text='Отмена')
-    add_preset.btn_cancel.bind_release(add_preset.close)
-    add_preset.btn_cancel.place(relx=0.5, y=78, relwidth=0.4, anchor='w')

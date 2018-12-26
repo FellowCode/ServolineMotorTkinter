@@ -9,14 +9,8 @@ from servo_reg import ServoReg
 from modes import *
 from additional_windows import *
 from preset import Preset
-from file import DictionaryParser
-dict1 = {'speed': 20, 'auto': {'speed': 200, 'accel_time': {'azazz': 123, 'pararar': '123123'}}, 'manual': {'speed': 200, 'accel_time': {'suzuki': {'azazz': 123, 'pararar': '123123'}, 'mitsubishi':123}}}
-file = DictionaryParser('st.txt')
-file.char = '*_-'
-file.margin = 2
-file.save_dict(dict1)
-dict2 = file.load_dict()
-print(dict1 == dict2)
+from dictionary_parser import DictionaryParser
+
 appdata_path = os.getenv('APPDATA') + '\\ServolineMotor\\'
 if not os.path.exists(appdata_path):
     os.makedirs(appdata_path)
@@ -42,49 +36,47 @@ class ServolineMotorApp(MainForm):
     manual_presets_id = -1
 
     sync_param_process = False
+    settings_file = DictionaryParser(appdata_path + 'settings.txt')
     def save_params(self):
+        params = {'com': self.com.get()}
+        auto = {'speed': self.auto_speed,
+                'accel_time': self.auto_accel_time,
+                'deccel_time': self.auto_deccel_time,
+                'work_time': self.auto_work_time,
+                'preset_id': self.auto_presets_id,
+                'reverse': self.reverse}
+        manual = {'speed': self.manual_speed,
+                  'accel_time': self.manual_accel_time,
+                  'deccel_time': self.manual_deccel_time,
+                  'preset_id': self.manual_presets_id}
+        params['auto'] = auto
+        params['manual'] = manual
         try:
-            with open(appdata_path + 'settings.txt', 'w') as f:
-                f.write(str(self.com.get()) + '\n')
-                f.write(str(self.auto_speed) + '\n')
-                f.write(str(self.auto_accel_time) + '\n')
-                f.write(str(self.auto_deccel_time) + '\n')
-                f.write(str(self.auto_work_time) + '\n')
-                f.write(str(self.auto_presets_id) + '\n')
-                f.write(str(self.reverse) + '\n')
-                f.write(str(self.manual_speed) + '\n')
-                f.write(str(self.manual_accel_time) + '\n')
-                f.write(str(self.manual_deccel_time) + '\n')
-                f.write(str(self.manual_presets_id) + '\n')
+            self.settings_file.save_dict(params)
         except:
             print('save params error')
 
     def load_params(self):
         try:
-            f = open(appdata_path + 'settings.txt')
-            self.com.set(f.readline().strip())
-            auto_speed = f.readline().strip()
-            if auto_speed != '-1':
-                self.speed.set(int(auto_speed))
-                self.accel_time.set(int(f.readline().strip()))
-                self.deccel_time.set(int(f.readline().strip()))
-                self.work_time.set(int(f.readline().strip()))
-                self.auto_speed = self.speed.get()
-                self.auto_accel_time = self.accel_time.get()
-                self.auto_deccel_time = self.deccel_time.get()
-                self.auto_work_time = self.work_time.get()
-                self.auto_presets_id = int(f.readline())
-                self.reverse = f.readline().strip() == 'True'
-            else:
-                for i in range(4):
-                    f.readline()
-            manual_speed = int(f.readline())
-            if manual_speed != -1:
-                self.manual_speed = manual_speed
-                self.manual_accel_time = int(f.readline())
-                self.manual_deccel_time = int(f.readline())
-                self.manual_presets_id = int(f.readline())
-            f.close()
+            params = self.settings_file.load_dict()
+            self.com.set(params['com'])
+            auto = params['auto']
+            self.auto_speed = auto['speed']
+            self.auto_accel_time = auto['accel_time']
+            self.auto_deccel_time = auto['deccel_time']
+            self.auto_presets_id = auto['preset_id']
+            self.reverse = auto['reverse']
+
+            manual = params['manual']
+            self.manual_speed = manual['speed']
+            self.manual_accel_time = manual['accel_time']
+            self.manual_deccel_time = manual['deccel_time']
+            self.manual_presets_id = manual['preset_id']
+
+            self.speed.set(self.auto_speed)
+            self.accel_time(self.auto_accel_time)
+            self.deccel_time(self.auto_deccel_time)
+            self.work_time(self.auto_work_time)
         except:
             print('load params error')
 
