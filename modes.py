@@ -16,10 +16,7 @@ class AutoMode(AutoModePart):
         self.app.entry_work_time['state'] = 'disabled'
 
     def motor_progress(self, work_time):
-        time_unit = work_time / 100
-        stop_pb_step = 5
-        stop_time_unit = self.app.deccel_time.get()/(1000*100/stop_pb_step)
-
+        time_unit = work_time / 110
         i=0
         while self.progress_run and i<100:
             i+=1

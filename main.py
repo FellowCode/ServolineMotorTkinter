@@ -74,9 +74,9 @@ class ServolineMotorApp(MainForm):
             self.manual_presets_id = manual['preset_id']
 
             self.speed.set(self.auto_speed)
-            self.accel_time(self.auto_accel_time)
-            self.deccel_time(self.auto_deccel_time)
-            self.work_time(self.auto_work_time)
+            self.accel_time.set(self.auto_accel_time)
+            self.deccel_time.set(self.auto_deccel_time)
+            self.work_time.set(self.auto_work_time)
         except:
             print('load params error')
 
@@ -329,6 +329,7 @@ class ServolineMotorApp(MainForm):
             preset_list[id-1] = preset
             self.update_presets_combobox()
             self.combobox_presets.current(id-1)
+            self.save_presets()
 
     def down_preset(self):
         preset_list = eval('self.' + self.mode + '_presets')
@@ -339,6 +340,7 @@ class ServolineMotorApp(MainForm):
             preset_list[id+1] = preset
             self.update_presets_combobox()
             self.combobox_presets.current(id + 1)
+            self.save_presets()
 
     def preset_selected(self, event):
         index = self.combobox_presets.current()
