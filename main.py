@@ -2,7 +2,10 @@ import tkinter as tk
 from design import *
 from ctypes import windll
 
+from serial import Serial
+
 from modbus import Modbus
+from endstops import EndstopListener
 import os
 import pickle
 from servo_reg import ServoReg
@@ -10,6 +13,7 @@ from modes import *
 from additional_windows import *
 from preset import Preset
 from dictionary_parser import DictionaryParser
+from threading import Timer
 
 appdata_path = os.getenv('APPDATA') + '\\ServolineMotor\\'
 if not os.path.exists(appdata_path):
@@ -17,9 +21,11 @@ if not os.path.exists(appdata_path):
 
 
 class ServolineMotorApp(MainForm):
-    reverse = False
+    reverse = True
     mode = 'auto'
     motor = Modbus()
+    endstop_thread = None
+    es_conn_timer = None
 
     auto_speed = 50
     auto_accel_time = 200
@@ -38,7 +44,7 @@ class ServolineMotorApp(MainForm):
     sync_param_process = False
     settings_file = DictionaryParser(appdata_path + 'settings.txt')
     def save_params(self):
-        params = {'com': self.com.get()}
+        params = {'com': self.com.get(), 'escom': self.escom.get()}
         auto = {'speed': self.auto_speed,
                 'accel_time': self.auto_accel_time,
                 'deccel_time': self.auto_deccel_time,
@@ -60,6 +66,7 @@ class ServolineMotorApp(MainForm):
         try:
             params = self.settings_file.load_dict()
             self.com.set(params['com'])
+            self.escom.set(params['escom'])
             auto = params['auto']
             self.auto_speed = auto['speed']
             self.auto_accel_time = auto['accel_time']
@@ -116,6 +123,11 @@ class ServolineMotorApp(MainForm):
 
     def connect(self):
         self.motor.connect(self.com.get(), self)
+        if str(self.entry_es_com.get()).find('-') != -1:
+            self.es_serial = Serial(self.entry_es_com.get(), baudrate=57200)
+            self.endstop_thread = EndstopListener(self, self.es_serial)
+            self.endstop_thread.start()
+            self.es_update_status()
         if self.motor.is_connect:
             self.btn_connect['text'] = 'Отключиться'
             self.switch_motor['state'] = 'normal'
@@ -124,6 +136,11 @@ class ServolineMotorApp(MainForm):
 
     def disconnect(self):
         self.motor.disconnect()
+        if hasattr(self, 'es_serial'):
+            self.endstop_thread.work = False
+            time.sleep(0.01)
+            self.es_serial.close()
+
         if not self.motor.is_connect:
             self.btn_connect['text'] = 'Подключиться'
             self.switch_motor.set_val(False)
@@ -142,6 +159,25 @@ class ServolineMotorApp(MainForm):
         else:
             self.motor.servo_off()
             self.enable_buttons(value)
+
+    def motor_stop(self):
+        def on_succes_stop(*args, **kwargs):
+            ans = kwargs['ans']
+            right_ans = kwargs['right_ans']
+            if ans == right_ans:
+                self.endstop_thread.motorIsStoped = True
+
+        if self.mode == 'auto':
+            self.auto.stop_servo_time_work(right_func=on_succes_stop)
+        elif self.mode == 'manual':
+            self.manual.motor_stop(right_func=on_succes_stop)
+
+    def es_update_status(self):
+        if self.es_conn_timer:
+            self.es_conn_timer.cancel()
+        self.es_conn_timer = Timer(1.5, lambda: self.set_es_conn_status(0))
+        self.es_conn_timer.start()
+        self.set_es_conn_status(1)
 
     def set_param_in_entry(self, register, value):
         if self.mode == 'auto':

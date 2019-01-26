@@ -125,14 +125,14 @@ class Modbus:
         cm = servo_forward_start_command()
         self.send_command(cm=cm, right_ans=cm)
 
-    def servo_forward_stop(self):
+    def servo_forward_stop(self, right_func = None):
         cm = servo_forward_stop_command()
-        self.send_command(cm=cm, right_ans=cm)
+        self.send_command(cm=cm, right_ans=cm, right_func=right_func)
 
     def servo_reverse_start(self):
         cm = servo_reverse_start_command()
         self.send_command(cm=cm, right_ans=cm)
 
-    def servo_reverse_stop(self):
+    def servo_reverse_stop(self, right_func = None):
         cm = servo_reverse_stop_command()
-        self.send_command(cm=cm, right_ans=cm)
+        self.send_command(cm=cm, right_ans=cm, right_func=right_func)
