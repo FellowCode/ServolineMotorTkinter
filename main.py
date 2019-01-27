@@ -123,8 +123,9 @@ class ServolineMotorApp(MainForm):
 
     def connect(self):
         self.motor.connect(self.com.get(), self)
-        if str(self.entry_es_com.get()).find('-') != -1:
-            self.es_serial = Serial(self.entry_es_com.get(), baudrate=57200)
+        es_com = str(self.entry_es_com.get())
+        if len(es_com) > 0 and es_com.find('-') != -1:
+            self.es_serial = Serial(self.entry_es_com.get(), baudrate=115200)
             self.endstop_thread = EndstopListener(self, self.es_serial)
             self.endstop_thread.start()
             self.es_update_status()
