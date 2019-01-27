@@ -3,14 +3,14 @@ import tkinter.ttk as ttk
 class CButton(ttk.Button):
     def bind_release(self, func, args=(), kwargs={}):
         try:
-            self.bind('<ButtonRelease-1>', lambda ev: func(*args, **kwargs))
+            self.bind('<ButtonRelease-1>', lambda ev: func(*args, **kwargs) if str(self['state']) != 'disabled' else None)
         except:
             print('Error btn binding')
 
     def bind_hold(self, func_press, func_release):
         try:
-            self.bind('<ButtonPress-1>', lambda ev: func_press())
-            self.bind('<ButtonRelease-1>', lambda ev: func_release())
+            self.bind('<ButtonPress-1>', lambda ev: func_press() if str(self['state']) != 'disabled' else None)
+            self.bind('<ButtonRelease-1>', lambda ev: func_release() if str(self['state']) != 'disabled' else None)
         except:
             print('Error btn binding')
 
@@ -18,14 +18,14 @@ class CButton(ttk.Button):
         super().__init__(*args, **kwargs)
 
 
-class SwitchButton(ttk.Button):
+class SwitchButton(CButton):
     val = False
     func = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self['text'] = 'OFF'
-        self.bind('<ButtonRelease-1>', lambda ev: self.change_val())
+        self.bind_release(self.change_val)
         if 'func' in kwargs.keys():
             self.fswitch_func = kwargs['func']
 
