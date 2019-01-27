@@ -24,7 +24,7 @@ class EndstopListener(Thread):
                         counter += 1
                         sleep(0.001)
                     if self.motorIsStoped:
-                        self.ser.write('motor stop\n'.encode('utf-8'))
+                        self.ser.write('motor stop'.encode('utf-8'))
                 elif s=='endstop OK':
                     self.app.es_update_status()
 
