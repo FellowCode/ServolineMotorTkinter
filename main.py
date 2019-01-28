@@ -1,8 +1,4 @@
 import tkinter as tk
-from design import *
-from ctypes import windll
-
-from serial import Serial
 
 from modbus import Modbus
 from endstops import EndstopListener
@@ -43,6 +39,7 @@ class ServolineMotorApp(MainForm):
 
     sync_param_process = False
     settings_file = DictionaryParser(appdata_path + 'settings.txt')
+
     def save_params(self):
         params = {'com': self.com.get(), 'escom': self.escom.get()}
         auto = {'speed': self.auto_speed,
@@ -273,16 +270,15 @@ class ServolineMotorApp(MainForm):
     def param_changed(self):
         values = ['speed', 'accel_time', 'deccel_time']
         for val in values:
-            if eval('self.' + str(self.mode) + '_' + str(val) +'!=self.' + str(val) + '.get()')or\
-                    (self.auto_work_time!=self.work_time.get()):
+            if eval('self.' + str(self.mode) + '_' + str(val) + '!=self.' + str(val) + '.get()') or \
+                    (self.auto_work_time != self.work_time.get()):
                 self.image_speed_error.place(x=230, y=50)
-
 
     def param_change_complete(self):
         values = ['speed', 'accel_time', 'deccel_time']
         for val in values:
-            if eval('self.' + str(self.mode) + '_' + str(val) +'!=self.' + str(val) + '.get()')or\
-                    (self.auto_work_time!=self.work_time.get()):
+            if eval('self.' + str(self.mode) + '_' + str(val) + '!=self.' + str(val) + '.get()') or \
+                    (self.auto_work_time != self.work_time.get()):
                 self.save_params()
                 self.servo_set_params()
                 if self.mode == 'auto':
@@ -291,7 +287,7 @@ class ServolineMotorApp(MainForm):
                     self.manual_presets_id = -1
                 break
 
-        if (self.mode == 'auto' and self.auto_presets_id == -1)or\
+        if (self.mode == 'auto' and self.auto_presets_id == -1) or \
                 (self.mode == 'manual' and self.manual_presets_id == -1):
             self.preset_var.set('Выбрать пресет')
 
@@ -367,19 +363,19 @@ class ServolineMotorApp(MainForm):
         id = self.combobox_presets.current()
         if id > 0 and id < len(preset_list):
             preset = preset_list[id]
-            preset_list[id] = preset_list[id-1]
-            preset_list[id-1] = preset
+            preset_list[id] = preset_list[id - 1]
+            preset_list[id - 1] = preset
             self.update_presets_combobox()
-            self.combobox_presets.current(id-1)
+            self.combobox_presets.current(id - 1)
             self.save_presets()
 
     def down_preset(self):
         preset_list = eval('self.' + self.mode + '_presets')
         id = self.combobox_presets.current()
-        if id > -1 and id < len(preset_list)-1:
+        if id > -1 and id < len(preset_list) - 1:
             preset = preset_list[id]
-            preset_list[id] = preset_list[id+1]
-            preset_list[id+1] = preset
+            preset_list[id] = preset_list[id + 1]
+            preset_list[id + 1] = preset
             self.update_presets_combobox()
             self.combobox_presets.current(id + 1)
             self.save_presets()
@@ -433,7 +429,6 @@ class ServolineMotorApp(MainForm):
         self.master.iconbitmap("icon.ico")
         self.master.resizable(False, False)
 
-
     def __init__(self, master):
         self.master = master
         super().__init__(self.master)
@@ -463,7 +458,6 @@ class ServolineMotorApp(MainForm):
         self.btn_del_preset.bind_release(self.del_preset)
         self.btn_up_preset.bind_release(self.up_preset)
         self.btn_down_preset.bind_release(self.down_preset)
-
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ class EndstopListener(Thread):
         super().__init__()
         self.daemon = True
         self.app = app
-        self.ser = Serial(com, baudrate=115200)
+        self.ser = Serial(com, baudrate=115200, timeout=0)
 
     def run(self):
         while self.work:

@@ -1,5 +1,6 @@
 import tkinter.ttk as ttk
 
+
 class CButton(ttk.Button):
     def bind_release(self, func, args=(), kwargs={}):
         try:
