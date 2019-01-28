@@ -7,11 +7,11 @@ class EndstopListener(Thread):
     work = True
     motorIsStoped = False
 
-    def __init__(self, app, ser):
-        self.daemon = True
+    def __init__(self, app, com):
         super().__init__()
+        self.daemon = True
         self.app = app
-        self.ser = ser
+        self.ser = Serial(com, baudrate=115200)
 
     def run(self):
         while self.work:
@@ -27,4 +27,7 @@ class EndstopListener(Thread):
                         self.ser.write('motor stop'.encode('utf-8'))
                 elif s=='endstop OK':
                     self.app.es_update_status()
+
+    def disconnect(self):
+        self.ser.close()
 

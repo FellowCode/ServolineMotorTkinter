@@ -125,8 +125,7 @@ class ServolineMotorApp(MainForm):
         self.motor.connect(self.com.get(), self)
         es_com = str(self.entry_es_com.get())
         if len(es_com) > 0 and es_com.find('-') != -1:
-            self.es_serial = Serial(self.entry_es_com.get(), baudrate=115200)
-            self.endstop_thread = EndstopListener(self, self.es_serial)
+            self.endstop_thread = EndstopListener(self, self.entry_es_com.get())
             self.endstop_thread.start()
             self.es_update_status()
         if self.motor.is_connect:
@@ -140,7 +139,7 @@ class ServolineMotorApp(MainForm):
         if hasattr(self, 'es_serial'):
             self.endstop_thread.work = False
             time.sleep(0.01)
-            self.es_serial.close()
+            self.endstop_thread.disconnect()
 
         if not self.motor.is_connect:
             self.btn_connect['text'] = 'Подключиться'
