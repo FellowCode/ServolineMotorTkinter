@@ -8,7 +8,7 @@ import pickle
 from servo_reg import ServoReg
 from modes import *
 from additional_windows import *
-from preset import Preset
+from preset import Preset, Group
 from dictionary_parser import DictionaryParser
 
 appdata_path = os.getenv('APPDATA') + '\\ServolineMotor\\'
@@ -30,6 +30,8 @@ class ServolineMotorApp(MainForm):
     manual_accel_time = 200
     manual_deccel_time = 200
 
+    auto_groups = []
+    auto_groups_id = -1
     auto_presets = []
     manual_presets = []
     auto_presets_id = -1
@@ -44,6 +46,7 @@ class ServolineMotorApp(MainForm):
                 'deccel_time': self.auto_deccel_time,
                 'work_time': self.auto_work_time,
                 'preset_id': self.auto_presets_id,
+                'group_id': self.auto_groups_id,
                 'reverse': self.reverse}
         manual = {'speed': self.manual_speed,
                   'accel_time': self.manual_accel_time,
@@ -65,6 +68,7 @@ class ServolineMotorApp(MainForm):
             self.auto_accel_time = auto['accel_time']
             self.auto_deccel_time = auto['deccel_time']
             self.auto_presets_id = auto['preset_id']
+            self.auto_groups_id = auto.get('group_id', -1)
             self.reverse = auto['reverse']
 
             manual = params['manual']
@@ -90,6 +94,9 @@ class ServolineMotorApp(MainForm):
         with open(appdata_path + 'presets.prs', 'wb') as f:
             presets = [self.auto_presets, self.manual_presets]
             pickle.dump(presets, f)
+        with open(appdata_path + 'groups.prs', 'wb') as f:
+            pickle.dump(self.auto_groups, f)
+
 
     def load_presets(self):
         try:
@@ -100,6 +107,12 @@ class ServolineMotorApp(MainForm):
         except:
             self.auto_presets = []
             self.manual_presets = []
+
+        try:
+            with open(appdata_path + 'groups.prs', 'rb') as f:
+                self.auto_groups = pickle.load(f)
+        except:
+            self.auto_groups = []
 
     def check_param_equals(self):
         pass
@@ -287,6 +300,13 @@ class ServolineMotorApp(MainForm):
         else:
             self.preset_var.set('Выбрать пресет')
 
+    def show_group_window(self, new=False):
+        self.group_master = Toplevel(self.master)
+        if new:
+            self.group_window = AddGroupWindow(self, self.group_master)
+        else:
+            self.group_window = AddGroupWindow(self, self.group_master, self.auto_groups_id)
+
     def show_add_preset_window(self):
         self.add_preset_master = Toplevel(self.master)
         self.add_preset_window = AddPresetWindow(self, self.add_preset_master)
@@ -348,6 +368,41 @@ class ServolineMotorApp(MainForm):
             self.combobox_presets.current(id + 1)
             self.save_presets()
 
+    def group_selected(self, event):
+        index = self.combobox_preset_groups.current()
+        self.auto_groups_id = index
+        if self.mode == 'auto':
+            group = self.auto_groups[index]
+            self.update_presets_combobox()
+            if len(group.preset_ids) > 0:
+                self.combobox_presets.current(0)
+
+
+
+    def save_group(self, name, preset_ids, id=-1):
+        if id < 0:
+            group = Group(name, preset_ids)
+            self.auto_groups.append(group)
+        else:
+            self.auto_groups[id].name = name
+            self.auto_groups[id].preset_ids = preset_ids
+        self.save_presets()
+        self.update_groups_combobox()
+        if id < 0:
+            self.combobox_preset_groups.current(END)
+        else:
+            self.combobox_preset_groups.current(id)
+        self.group_selected(None)
+
+    def delete_group(self, id):
+        self.auto_groups.pop(id)
+        self.auto_groups_id = -1
+        self.save_params()
+        self.save_presets()
+        self.update_groups_combobox()
+        self.update_presets_combobox()
+
+
     def preset_selected(self, event):
         index = self.combobox_presets.current()
         if self.mode == 'auto':
@@ -371,10 +426,25 @@ class ServolineMotorApp(MainForm):
         self.servo_set_params()
         self.save_params()
 
+    def update_groups_combobox(self):
+        group_names = []
+        for group in self.auto_groups:
+            group_names.append(group.name)
+        self.combobox_preset_groups['values'] = group_names
+
+        if len(group_names) == 0:
+            self.preset_groups_var.set('Все пресеты')
+
     def update_presets_combobox(self):
         preset_names = []
         if self.mode == 'auto':
-            preset_list = self.auto_presets
+            if self.auto_groups_id > -1:
+                group = self.auto_groups[self.auto_groups_id]
+                preset_list = []
+                for id in group.preset_ids:
+                    preset_list.append(self.auto_presets[id])
+            else:
+                preset_list = self.auto_presets
         else:
             preset_list = self.manual_presets
         for preset in preset_list:
@@ -390,8 +460,9 @@ class ServolineMotorApp(MainForm):
 
     def set_default_settings(self):
         self.preset_var.set('Выбрать пресет')
+        self.preset_groups_var.set('Все пресеты')
         self.width = 400
-        self.height = 320
+        self.height = 360
         self.master.geometry('%dx%d' % (self.width, self.height))
         self.master.title("Servoline Motor")
         self.master.iconbitmap("icon.ico")
@@ -404,6 +475,9 @@ class ServolineMotorApp(MainForm):
         self.set_default_settings()
         self.load_params()
         self.load_presets()
+        self.update_groups_combobox()
+        if self.auto_groups_id > -1:
+            self.combobox_preset_groups.current(self.auto_groups_id)
         self.update_presets_combobox()
         if self.auto_presets_id > -1:
             self.combobox_presets.current(self.auto_presets_id)
@@ -422,6 +496,9 @@ class ServolineMotorApp(MainForm):
         self.switch_motor.bind_sw(self.motor_change_state)
         self.switch_motor.val = True
         self.switch_motor.change_val()
+
+        self.btn_group.bind_release(self.show_group_window)
+        self.btn_group_add.bind_release(lambda: self.show_group_window(new=True))
 
         self.btn_add_preset.bind_release(self.show_add_preset_window)
         self.btn_del_preset.bind_release(self.del_preset)

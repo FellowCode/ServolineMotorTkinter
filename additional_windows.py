@@ -36,3 +36,29 @@ class AddPresetWindow(AddPresetForm):
         self.app.add_preset(self.name.get())
         self.close()
 
+
+class AddGroupWindow(AddGroupForm):
+    def __init__(self, app, master, group_id=-1):
+        self.app = app
+        self.group_id=group_id
+        super().__init__(app.master, master)
+
+        self.set_title('Группа')
+
+        for preset in self.app.auto_presets:
+            self.lb.insert(END, preset.name)
+
+        if self.group_id > -1:
+            self.name.set(self.app.auto_groups[self.group_id].name)
+            for preset_id in self.app.auto_groups[self.group_id].preset_ids:
+                self.lb.selection_set(preset_id)
+
+    def save(self):
+        preset_ids = list(self.lb.curselection())
+        self.app.save_group(self.name.get(), preset_ids, id=self.group_id)
+        self.close()
+
+    def delete(self):
+        self.app.delete_group(self.group_id)
+        self.close()
+

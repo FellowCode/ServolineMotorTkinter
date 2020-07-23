@@ -67,6 +67,7 @@ class MainForm(Form):
         self.deccel_time = IntVar()
         self.work_time = IntVar()
         self.preset_var = StringVar()
+        self.preset_groups_var = StringVar()
 
     def ui_init(self):
         self.label_com = ttk.Label(self.master, text='COM')
@@ -115,17 +116,26 @@ class MainForm(Form):
         self.image_logo.image = logo_temp
         self.image_logo.place(x=245, y=40)
 
+        self.combobox_preset_groups = ttk.Combobox(self.master, state='readonly', textvariable=self.preset_groups_var, font=font_mean)
+        self.combobox_preset_groups.bind('<<ComboboxSelected>>', self.group_selected)
+        self.combobox_preset_groups.place(x=20, y=180)
+        self.btn_group = CButton(self.master, text='Настройка', style='Mini.TButton')
+        self.btn_group.place(x=205, y=180, width=90)
+
+        self.btn_group_add = CButton(self.master, text='+', style='Mini.TButton')
+        self.btn_group_add.place(x=295, y=180, width=30)
+
         self.combobox_presets = ttk.Combobox(self.master, state='readonly', textvariable=self.preset_var, font=font_mean)
         self.combobox_presets.bind('<<ComboboxSelected>>', self.preset_selected)
-        self.combobox_presets.place(x=20, y=180)
+        self.combobox_presets.place(x=20, y=220)
         self.btn_add_preset = CButton(self.master, text='+', style='Mini.TButton')
-        self.btn_add_preset.place(x=205, y=180, width=30)
+        self.btn_add_preset.place(x=205, y=220, width=30)
         self.btn_del_preset = CButton(self.master, text='-', style='Mini.TButton')
-        self.btn_del_preset.place(x=235, y=180, width=30)
+        self.btn_del_preset.place(x=235, y=220, width=30)
         self.btn_up_preset = CButton(self.master, text='/\\', style='Mini.TButton')
-        self.btn_up_preset.place(x=265, y=180, width=30)
+        self.btn_up_preset.place(x=265, y=220, width=30)
         self.btn_down_preset = CButton(self.master, text='\\/', style='Mini.TButton')
-        self.btn_down_preset.place(x=295, y=180, width=30)
+        self.btn_down_preset.place(x=295, y=220, width=30)
 
 class AutoModePart(UIPart):
     btn_start = None
@@ -135,7 +145,7 @@ class AutoModePart(UIPart):
     label_move_state = None
     progressbar_motor = None
     def __init__(self, master):
-        super().__init__(master, x=0, y=220, relwidth=1, height=100)
+        super().__init__(master, x=0, y=260, relwidth=1, height=100)
         self.master = master
         self.ui_init()
 
@@ -163,7 +173,7 @@ class ManualModePart(UIPart):
     btn_change_mode = None
 
     def __init__(self, master):
-        super().__init__(master, x=0, y=220, relwidth=1, height=100)
+        super().__init__(master, x=0, y=260, relwidth=1, height=100)
         self.master = master
         self.ui_init()
 
@@ -177,9 +187,9 @@ class ManualModePart(UIPart):
 
 
 class AdditionalForm(Form):
-    width = 300
-    height = 100
-    def __init__(self, main_master, master):
+    def __init__(self, main_master, master, width=300, height=100):
+        self.width = width
+        self.height = height
         super().__init__(master)
         self.main_master = main_master
         self.master = master
@@ -242,3 +252,30 @@ class AddPresetForm(AdditionalForm):
         self.btn_cancel = CButton(self.master, text='Отмена')
         self.btn_cancel.bind_release(self.close)
         self.btn_cancel.place(relx=0.5, y=78, relwidth=0.4, anchor='w')
+
+
+class AddGroupForm(AdditionalForm):
+    def __init__(self, main_master, master):
+        super().__init__(main_master, master, width=300, height=300)
+        self.master.resizable(False, False)
+        self.vars_init()
+        self.ui_init()
+
+    def vars_init(self):
+        self.name = StringVar()
+
+    def ui_init(self):
+        ttk.Label(self.master, text='Название').pack(anchor='sw', padx=10)
+        ttk.Entry(self.master, textvariable=self.name, font=font_mean).pack(fill=X, padx=10)
+        ttk.Label(self.master, text='Пресеты').pack(anchor='sw', padx=10)
+        frame = ttk.Frame(self.master)
+        self.lb = Listbox(frame, selectmode=EXTENDED)
+        self.lb.pack(side=LEFT, expand=1, fill=BOTH)
+        scroll = Scrollbar(frame, command=self.lb.yview)
+        scroll.pack(side=LEFT, fill=Y)
+        self.lb.config(yscrollcommand=scroll.set)
+        frame.pack(expand=1, fill=BOTH)
+        frame = ttk.Frame(self.master)
+        ttk.Button(frame, text='Сохранить', command=self.save).pack(side=LEFT)
+        ttk.Button(frame, text='Удалить', command=self.delete).pack(side=LEFT)
+        frame.pack(pady=5)
