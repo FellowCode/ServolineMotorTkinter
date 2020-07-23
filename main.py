@@ -422,8 +422,9 @@ class ServolineMotorApp(MainForm):
 
     def set_default_settings(self):
         self.preset_var.set('Выбрать пресет')
+        self.preset_group_var.set('Выбрать группу')
         self.width = 400
-        self.height = 320
+        self.height = 360
         self.master.geometry('%dx%d' % (self.width, self.height))
         self.master.title("Servoline Motor")
         self.master.iconbitmap("icon.ico")

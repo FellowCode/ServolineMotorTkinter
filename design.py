@@ -70,6 +70,7 @@ class MainForm(Form):
         self.deccel_time = IntVar()
         self.work_time = IntVar()
         self.preset_var = StringVar()
+        self.preset_group_var = StringVar()
 
     def ui_init(self):
         self.label_com = ttk.Label(self.master, text='COM')
@@ -78,17 +79,6 @@ class MainForm(Form):
         self.entry_com = IntegerEntry(self.master, textvariable=self.com)
         self.entry_com.bind('<FocusOut>', (lambda _: self.save_params()))
         self.entry_com.place(x=50, y=10, width=30)
-
-        self.label_es_com = ttk.Label(self.master, text='ESCOM', style='small.TLabel')
-        self.label_es_com.place(x=5, y=32)
-
-        self.entry_es_com = IntegerEntry(self.master, textvariable=self.escom)
-        self.entry_es_com.bind('<FocusOut>', (lambda _: self.save_params()))
-        self.entry_es_com.place(x=50, y=33, width=30, height=15)
-
-        self.canvas = Canvas(self.master, width=15, height=15)
-        self.canvas.place(x=80, y=31)
-        self.set_es_conn_status(0)
 
         self.btn_connect = CButton(self.master, text='Подключиться', style='Mini.TButton')
         self.btn_connect.place(x=90, y=8)
@@ -129,24 +119,23 @@ class MainForm(Form):
         self.image_logo.image = logo_temp
         self.image_logo.place(x=245, y=40)
 
+        self.combobox_preset_groups = ttk.Combobox(self.master, state='readonly', textvariable=self.preset_group_var,
+                                             font=font_mean)
+        self.combobox_preset_groups.bind('<<ComboboxSelected>>', None)
+        self.combobox_preset_groups.place(x=20, y=180)
+
         self.combobox_presets = ttk.Combobox(self.master, state='readonly', textvariable=self.preset_var, font=font_mean)
         self.combobox_presets.bind('<<ComboboxSelected>>', self.preset_selected)
-        self.combobox_presets.place(x=20, y=180)
+        self.combobox_presets.place(x=20, y=220)
         self.btn_add_preset = CButton(self.master, text='+', style='Mini.TButton')
-        self.btn_add_preset.place(x=205, y=180, width=30)
+        self.btn_add_preset.place(x=205, y=220, width=30)
         self.btn_del_preset = CButton(self.master, text='-', style='Mini.TButton')
-        self.btn_del_preset.place(x=235, y=180, width=30)
+        self.btn_del_preset.place(x=235, y=220, width=30)
         self.btn_up_preset = CButton(self.master, text='/\\', style='Mini.TButton')
-        self.btn_up_preset.place(x=265, y=180, width=30)
+        self.btn_up_preset.place(x=265, y=220, width=30)
         self.btn_down_preset = CButton(self.master, text='\\/', style='Mini.TButton')
-        self.btn_down_preset.place(x=295, y=180, width=30)
+        self.btn_down_preset.place(x=295, y=220, width=30)
 
-    def set_es_conn_status(self, status):
-        if status == 1:
-            color = 'green'
-        else:
-            color = 'red'
-        self.canvas.create_oval(6, 6, 14, 14, fill=color)
 
 class AutoModePart(UIPart):
     btn_start = None
@@ -156,7 +145,7 @@ class AutoModePart(UIPart):
     label_move_state = None
     progressbar_motor = None
     def __init__(self, master):
-        super().__init__(master, x=0, y=220, relwidth=1, height=100)
+        super().__init__(master, x=0, y=260, relwidth=1, height=100)
         self.master = master
         self.ui_init()
 
@@ -184,7 +173,7 @@ class ManualModePart(UIPart):
     btn_change_mode = None
 
     def __init__(self, master):
-        super().__init__(master, x=0, y=220, relwidth=1, height=100)
+        super().__init__(master, x=0, y=260, relwidth=1, height=100)
         self.master = master
         self.ui_init()
 
