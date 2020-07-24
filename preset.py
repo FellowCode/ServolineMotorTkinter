@@ -6,7 +6,8 @@ class Preset:
         self.accel_time = accel_time
         self.deccel_time = deccel_time
 
+
 class Group:
-    def __init__(self, name, preset_ids):
+    def __init__(self, name, presets):
         self.name = name
-        self.preset_ids = preset_ids
+        self.presets = presets

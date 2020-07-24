@@ -119,23 +119,26 @@ class MainForm(Form):
         self.combobox_preset_groups = ttk.Combobox(self.master, state='readonly', textvariable=self.preset_groups_var, font=font_mean)
         self.combobox_preset_groups.bind('<<ComboboxSelected>>', self.group_selected)
         self.combobox_preset_groups.place(x=20, y=180)
-        self.btn_group = CButton(self.master, text='Настройка', style='Mini.TButton')
-        self.btn_group.place(x=205, y=180, width=90)
-
+        self.btn_group_settings = CButton(self.master, text='Настройка', style='Mini.TButton')
+        self.btn_group_settings.place(x=205, y=180, width=80)
         self.btn_group_add = CButton(self.master, text='+', style='Mini.TButton')
-        self.btn_group_add.place(x=295, y=180, width=30)
+        self.btn_group_add.place(x=285, y=180, width=30)
+        self.btn_up_group = CButton(self.master, text='/\\', style='Mini.TButton')
+        self.btn_up_group.place(x=315, y=180, width=30)
+        self.btn_down_group = CButton(self.master, text='\\/', style='Mini.TButton')
+        self.btn_down_group.place(x=345, y=180, width=30)
 
         self.combobox_presets = ttk.Combobox(self.master, state='readonly', textvariable=self.preset_var, font=font_mean)
         self.combobox_presets.bind('<<ComboboxSelected>>', self.preset_selected)
         self.combobox_presets.place(x=20, y=220)
+        self.btn_preset_settings = CButton(self.master, text='Настройка', style='Mini.TButton')
+        self.btn_preset_settings.place(x=205, y=220, width=80)
         self.btn_add_preset = CButton(self.master, text='+', style='Mini.TButton')
-        self.btn_add_preset.place(x=205, y=220, width=30)
-        self.btn_del_preset = CButton(self.master, text='-', style='Mini.TButton')
-        self.btn_del_preset.place(x=235, y=220, width=30)
+        self.btn_add_preset.place(x=285, y=220, width=30)
         self.btn_up_preset = CButton(self.master, text='/\\', style='Mini.TButton')
-        self.btn_up_preset.place(x=265, y=220, width=30)
+        self.btn_up_preset.place(x=315, y=220, width=30)
         self.btn_down_preset = CButton(self.master, text='\\/', style='Mini.TButton')
-        self.btn_down_preset.place(x=295, y=220, width=30)
+        self.btn_down_preset.place(x=345, y=220, width=30)
 
 class AutoModePart(UIPart):
     btn_start = None
@@ -254,7 +257,7 @@ class AddPresetForm(AdditionalForm):
         self.btn_cancel.place(relx=0.5, y=78, relwidth=0.4, anchor='w')
 
 
-class AddGroupForm(AdditionalForm):
+class GroupSettingsForm(AdditionalForm):
     def __init__(self, main_master, master):
         super().__init__(main_master, master, width=300, height=300)
         self.master.resizable(False, False)
@@ -276,6 +279,43 @@ class AddGroupForm(AdditionalForm):
         self.lb.config(yscrollcommand=scroll.set)
         frame.pack(expand=1, fill=BOTH)
         frame = ttk.Frame(self.master)
-        ttk.Button(frame, text='Сохранить', command=self.save).pack(side=LEFT)
-        ttk.Button(frame, text='Удалить', command=self.delete).pack(side=LEFT)
+        self.btn_save = ttk.Button(frame, text='Сохранить')
+        self.btn_save.pack(side=LEFT)
+        self.btn_delete = ttk.Button(frame, text='Удалить')
+        self.btn_delete.pack(side=LEFT)
+        frame.pack(pady=5)
+
+
+class PresetSettingsForm(AdditionalForm):
+    def __init__(self, main_master, master):
+        super().__init__(main_master, master, width=250, height=250)
+        self.master.resizable(False, False)
+        self.vars_init()
+        self.ui_init()
+
+    def vars_init(self):
+        self.name = StringVar()
+        self.speed = IntVar()
+        self.accel_time = IntVar()
+        self.deccel_time = IntVar()
+        self.work_time = IntVar()
+
+    def ui_init(self):
+        ttk.Label(self.master, text='Название').pack(anchor='sw', padx=10)
+        ttk.Entry(self.master, textvariable=self.name, font=font_mean).pack(fill=X, padx=10)
+        frame = ttk.Frame(self.master)
+        ttk.Label(frame, text='Скорость').grid(row=0, column=0, pady=5, padx=5)
+        ttk.Entry(frame, textvariable=self.speed, width=5, font=font_mean).grid(row=0, column=1, pady=5)
+        ttk.Label(frame, text='Время ускорения').grid(row=1, column=0, pady=5, padx=5)
+        ttk.Entry(frame, textvariable=self.accel_time, width=5, font=font_mean).grid(row=1, column=1, pady=5)
+        ttk.Label(frame, text='Время торможения').grid(row=2, column=0, pady=5, padx=5)
+        ttk.Entry(frame, textvariable=self.deccel_time, width=5, font=font_mean).grid(row=2, column=1, pady=5)
+        ttk.Label(frame, text='Время работы').grid(row=3, column=0, pady=5, padx=5)
+        ttk.Entry(frame, textvariable=self.work_time, width=5, font=font_mean).grid(row=3, column=1, pady=5)
+        frame.pack(pady=5)
+        frame = ttk.Frame(self.master)
+        self.btn_save = ttk.Button(frame, text='Сохранить')
+        self.btn_save.pack(side=LEFT)
+        self.btn_delete = ttk.Button(frame, text='Удалить')
+        self.btn_delete.pack(side=LEFT)
         frame.pack(pady=5)
