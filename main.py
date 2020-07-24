@@ -286,6 +286,7 @@ class ServolineMotorApp(MainForm):
             self.deccel_time.set(self.manual_deccel_time)
             self.auto_work_time = self.work_time.get()
             self.work_time.set(0)
+            self.hide_groups_menu()
             id_pres = self.manual_presets_id
         else:
             self.mode = 'auto'
@@ -295,6 +296,7 @@ class ServolineMotorApp(MainForm):
             self.accel_time.set(self.auto_accel_time)
             self.deccel_time.set(self.auto_deccel_time)
             self.work_time.set(self.auto_work_time)
+            self.show_groups_menu()
             id_pres = self.auto_presets_id
 
         self.servo_set_params()
@@ -444,6 +446,7 @@ class ServolineMotorApp(MainForm):
             self.update_presets_combobox()
             if len(group.presets) > 0:
                 self.combobox_presets.current(pr_sel_index)
+                self.preset_selected(None)
             else:
                 self.preset_var.set('Нет пресетов')
 
@@ -535,6 +538,20 @@ class ServolineMotorApp(MainForm):
         self.master.title("Servoline Motor")
         self.master.iconbitmap("icon.ico")
         self.master.resizable(False, False)
+
+    def show_groups_menu(self):
+        self.show_element(self.combobox_preset_groups)
+        self.show_element(self.btn_group_settings)
+        self.show_element(self.btn_group_add)
+        self.show_element(self.btn_up_group)
+        self.show_element(self.btn_down_group)
+
+    def hide_groups_menu(self):
+        self.hide_element(self.combobox_preset_groups)
+        self.hide_element(self.btn_group_settings)
+        self.hide_element(self.btn_group_add)
+        self.hide_element(self.btn_up_group)
+        self.hide_element(self.btn_down_group)
 
 
     def __init__(self, master):

@@ -140,6 +140,7 @@ class MainForm(Form):
         self.btn_down_preset = CButton(self.master, text='\\/', style='Mini.TButton')
         self.btn_down_preset.place(x=345, y=220, width=30)
 
+
 class AutoModePart(UIPart):
     btn_start = None
     btn_stop = None
