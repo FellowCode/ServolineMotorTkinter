@@ -291,6 +291,7 @@ class ServolineMotorApp(MainForm):
             self.work_time.set(0)
             self.hide_groups_menu()
             id_pres = self.manual_presets_id
+            self.update_presets_combobox()
         else:
             self.mode = 'auto'
             self.manual.hide()
@@ -304,9 +305,12 @@ class ServolineMotorApp(MainForm):
             self.work_time.set(self.auto_work_time)
             self.show_groups_menu()
             id_pres = self.auto_presets_id
+            if self.auto_presets_id > -1:
+                self.group_selected(None, pr_sel_index=self.auto_presets_id)
+            else:
+                self.update_presets_combobox()
 
         self.servo_set_params()
-        self.update_presets_combobox()
         if id_pres > -1:
             self.combobox_presets.current(id_pres)
         else:
