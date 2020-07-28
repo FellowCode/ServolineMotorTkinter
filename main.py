@@ -281,10 +281,13 @@ class ServolineMotorApp(MainForm):
             self.mode = 'manual'
             self.auto.hide()
             self.manual.show()
+            self.auto_speed = self.speed.get()
+            self.auto_accel_time = self.accel_time.get()
+            self.auto_deccel_time = self.deccel_time.get()
+            self.auto_work_time = self.work_time.get()
             self.speed.set(self.manual_speed)
             self.accel_time.set(self.manual_accel_time)
             self.deccel_time.set(self.manual_deccel_time)
-            self.auto_work_time = self.work_time.get()
             self.work_time.set(0)
             self.hide_groups_menu()
             id_pres = self.manual_presets_id
@@ -292,6 +295,9 @@ class ServolineMotorApp(MainForm):
             self.mode = 'auto'
             self.manual.hide()
             self.auto.show()
+            self.manual_speed = self.speed.get()
+            self.manual_accel_time = self.accel_time.get()
+            self.manual_deccel_time = self.deccel_time.get()
             self.speed.set(self.auto_speed)
             self.accel_time.set(self.auto_accel_time)
             self.deccel_time.set(self.auto_deccel_time)
