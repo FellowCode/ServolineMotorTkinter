@@ -1,0 +1,1 @@
+python -m PyInstaller servolinetkinter_full.spec
